@@ -9,9 +9,15 @@ piece_values = {
     chess.QUEEN: 9,
     chess.KING: 0,
 }
+WIN = 1000
 
 
 def evaluate(board):
+    if board.is_checkmate():
+        return -WIN if board.turn == chess.WHITE else WIN
+    if board.is_game_over(claim_draw=True):
+        return 0
+
     score = 0
     for square in chess.SQUARES:
         piece = board.piece_at(square)
