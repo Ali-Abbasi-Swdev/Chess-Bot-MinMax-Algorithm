@@ -27,16 +27,30 @@ def evaluate(board):
     return score
 
 
-def minimax(board, depth):
+def alphabeta(board, depth, alpha, beta):
     if depth <= 0 or board.is_game_over(claim_draw=True):
         return evaluate(board)
 
-    scores = []
+    if board.turn == chess.WHITE:
+        best = float("-inf")
+        for move in board.legal_moves:
+            board.push(move)
+            best = max(best, alphabeta(board, depth - 1, alpha, beta))
+            board.pop()
+            alpha = max(alpha, best)
+            if beta <= alpha:
+                break
+        return best
+
+    best = float("inf")
     for move in board.legal_moves:
         board.push(move)
-        scores.append(minimax(board, depth - 1))
+        best = min(best, alphabeta(board, depth - 1, alpha, beta))
         board.pop()
-    return max(scores) if board.turn == chess.WHITE else min(scores)
+        beta = min(beta, best)
+        if beta <= alpha:
+            break
+    return best
 
 
 def get_best_move(board, depth):
@@ -46,14 +60,18 @@ def get_best_move(board, depth):
 
     best_move = None
     best_score = float("-inf") if board.turn == chess.WHITE else float("inf")
+    alpha = float("-inf")
+    beta = float("inf")
     for move in moves:
         board.push(move)
-        score = minimax(board, depth - 1)
+        score = alphabeta(board, depth - 1, alpha, beta)
         board.pop()
         if board.turn == chess.WHITE and score > best_score:
             best_score = score
             best_move = move
+            alpha = max(alpha, best_score)
         elif board.turn == chess.BLACK and score < best_score:
             best_score = score
             best_move = move
+            beta = min(beta, best_score)
     return best_move
